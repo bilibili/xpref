@@ -11,6 +11,16 @@ cross-process sharing data
 
 ### Usage
 
+Add dependency to your gradle script:
+
+```
+dependencies {
+    implementation 'com.bilibili:x-pref:1.0'
+}
+```
+
+Note that this library is written with kotlin 1.2.10.
+
 1. Gets the default SharedPreferences which is typically used in the Settings of an APP.
 
 ```
@@ -20,6 +30,7 @@ Xpref.getDefaultSharedPreferences(context)
 2. Gets a SharedPreferences with specific named.
 
 ```
+val name = "awesome"
 Xpref.getSharedPreferences(context, name)
 ```
 

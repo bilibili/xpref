@@ -26,3 +26,4 @@ dependencies {
     androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     compileOnly 'com.android.support:support-annotations:25.4.0'
 }
+apply from: rootProject.file('gradle/bintray.gradle')
