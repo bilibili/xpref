@@ -1,0 +1,120 @@
+// Kotlin linter
+// https://github.com/shyiko/ktlint
+
+if (!kotlin_version) {
+    ext.kotlin_version = '1.2.10'
+}
+
+configurations {
+    ktlint.resolutionStrategy {
+        force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+        force "org.jetbrains.kotlin:kotlin-script-runtime:$kotlin_version"
+        force "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
+    }
+}
+
+dependencies {
+    ktlint "com.github.shyiko:ktlint:0.14.0"
+}
+
+def applyCodeStyle = rootProject.getTasks().findByName('applyCodeStyle')
+if (!applyCodeStyle) {
+    rootProject.getTasks().create('applyCodeStyle', JavaExec) {
+        workingDir = rootProject.projectDir
+        classpath = configurations.ktlint
+        main = "com.github.shyiko.ktlint.Main"
+        args '--apply-to-idea', '--android', '-y'
+    }
+}
+
+
+task ktlintChanges(group: "verification", description: "Check Kotlin code style.") {
+
+    new ByteArrayOutputStream().withStream { out ->
+        exec {
+            //workingDir = project.projectDir
+            executable = 'git'
+            args 'diff', '--name-only', '--relative', 'HEAD'
+            standardOutput = out
+        }.assertNormalExitValue()
+        def files = out.toString().readLines()
+                .findAll { it.endsWith('.kt') && !it.endsWith('Test.kt') }.toArray()
+        inputs.files(files).skipWhenEmpty(true)
+    }
+
+    doLast {
+        new ByteArrayOutputStream().withStream { out->
+            def result = javaexec {
+                classpath = configurations.ktlint
+                main = 'com.github.shyiko.ktlint.Main'
+
+                if (inputs.hasSourceFiles) {
+                    args '--android', '--reporter=plain'
+
+                    args inputs.sourceFiles.filter { it.path.endsWith('.kt') }
+                }
+                standardOutput = out
+                ignoreExitValue = true
+            }.exitValue
+            if (result != 0) {
+                out.toString().readLines().each {
+                    logger.log(LogLevel.ERROR, it)
+                }
+                logger.log(LogLevel.WARN, "Ktlint rule violations were found! " +
+                        "See https://ktlint.github.io/#rules for more")
+                throw new GradleException('Ktlint: Check style failure, fix it!\n See gradle console for details')
+            }
+        }
+    }
+}
+
+task ktlint(group: "verification", description: "Check Kotlin code style.") {
+    doLast {
+        new ByteArrayOutputStream().withStream { out->
+            def result = javaexec {
+                classpath = configurations.ktlint
+                main = 'com.github.shyiko.ktlint.Main'
+                // to generate report in checkstyle format prepend following args:
+                // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
+                // see https://github.com/shyiko/ktlint#usage for more
+                args '--android', '--reporter=plain'
+                if (inputs.hasSourceFiles) {
+                    args inputs.sourceFiles.filter { it.path.endsWith('.kt') }
+                } else {
+                    args 'src/**/*.kt', '!src/**/*Test.kt'
+                }
+                standardOutput = out
+                ignoreExitValue = true
+            }.exitValue
+            if (result != 0) {
+                out.toString().readLines().each {
+                    logger.log(LogLevel.ERROR, it)
+                }
+                logger.log(LogLevel.WARN, "Ktlint rule violations were found! " +
+                        "See https://ktlint.github.io/#rules for more")
+                throw new GradleException('Ktlint: Check style failure, fix it!\n See gradle console for details')
+            }
+        }
+    }
+}
+
+task ktlintFormat(type: JavaExec, group: "formatting") {
+    description = "Fix Kotlin code style deviations."
+    classpath = configurations.ktlint
+    main = 'com.github.shyiko.ktlint.Main'
+    args '--android', '-F', 'src/**/*.kt', '!src/**/*Test.kt'
+}
+
+check.dependsOn 'ktlint'
+
+def plugin = project.plugins.findPlugin('kotlin-android')
+if (plugin) {
+    def kotlinCompileType = plugin.class.classLoader.loadClass('org.jetbrains.kotlin.gradle.dsl.KotlinCompile')
+    if (kotlinCompileType) {
+        tasks.withType(kotlinCompileType) {
+            if (it.name =~ /^compile.*Kotlin$/) {
+                it.dependsOn 'ktlintChanges'
+            }
+        }
+    }
+}
