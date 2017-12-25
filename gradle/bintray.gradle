@@ -83,7 +83,7 @@ afterEvaluate {
             name = POM_NAME
             userOrg = 'bilibili'
             description = POM_DESCRIPTION
-            publish = false
+            publish = true
             publicDownloadNumbers = true
             licenses = ['Apache-2.0']
             labels = ['android', 'sharedpreferences']

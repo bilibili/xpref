@@ -15,7 +15,7 @@ Add dependency to your gradle script:
 
 ```
 dependencies {
-    implementation 'com.bilibili:x-pref:1.0'
+    implementation 'com.bilibili.lib:x-pref:1.0'
 }
 ```
 
