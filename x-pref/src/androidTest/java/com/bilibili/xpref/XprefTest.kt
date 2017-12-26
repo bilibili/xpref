@@ -69,8 +69,8 @@ class XprefTest {
         assertEquals(v, preferences.getString("notexsits", v))
 
         preferences.edit()
-                .putString(key, v)
-                .apply()
+            .putString(key, v)
+            .apply()
         assertEquals(v, preferences.getString(key, null))
     }
 
@@ -83,11 +83,10 @@ class XprefTest {
         assertEquals(v, preferences.getStringSet("notexsits", v))
 
         preferences.edit()
-                .putStringSet(key, v)
-                .apply()
+            .putStringSet(key, v)
+            .apply()
         assertEquals(v, preferences.getStringSet(key, null))
     }
-
 
     @Test
     fun testGetFloat() {
@@ -97,8 +96,8 @@ class XprefTest {
         assertEquals(Float.NaN, preferences.getFloat("notexsits", Float.NaN))
 
         preferences.edit()
-                .putFloat(key, v)
-                .apply()
+            .putFloat(key, v)
+            .apply()
         assertEquals(v, preferences.getFloat(key, Float.NaN))
     }
 
@@ -112,8 +111,8 @@ class XprefTest {
         assertTrue(Long.MIN_VALUE == preferences.getLong("notexsits", Long.MIN_VALUE))
 
         preferences.edit()
-                .putLong(key, v)
-                .apply()
+            .putLong(key, v)
+            .apply()
         assertEquals(v, preferences.getLong(key, v.inv()))
     }
 
@@ -127,8 +126,8 @@ class XprefTest {
         assertTrue(Int.MIN_VALUE == preferences.getInt("notexsits", Int.MIN_VALUE))
 
         preferences.edit()
-                .putInt(key, v)
-                .apply()
+            .putInt(key, v)
+            .apply()
         assertEquals(v.toLong(), preferences.getInt(key, v.inv()).toLong())
     }
 
@@ -141,8 +140,8 @@ class XprefTest {
         assertFalse(preferences.getBoolean("notexsits", false))
 
         preferences.edit()
-                .putBoolean(key, v)
-                .apply()
+            .putBoolean(key, v)
+            .apply()
         assertEquals(v, preferences.getBoolean(key, !v))
     }
 
@@ -151,12 +150,12 @@ class XprefTest {
         val preferences = xpref()
         assertTrue(preferences.all.isEmpty())
         preferences.edit()
-                .putInt("a", 1)
-                .putBoolean("b", true)
-                .putStringSet("s", HashSet(Arrays.asList("a", "b", "c")))
-                .putFloat("d", 0.1f)
-                .putLong("l", Long.MAX_VALUE)
-                .apply()
+            .putInt("a", 1)
+            .putBoolean("b", true)
+            .putStringSet("s", HashSet(Arrays.asList("a", "b", "c")))
+            .putFloat("d", 0.1f)
+            .putLong("l", Long.MAX_VALUE)
+            .apply()
         assertEquals(5, preferences.all.size.toLong())
     }
 
@@ -206,6 +205,7 @@ class XprefTest {
 
         assertEquals(2, listener.testedState.toLong())
     }
+
     @Test
     fun testNullKeyListener() {
         val preferences = xpref()
@@ -230,8 +230,9 @@ class XprefTest {
 
         assertEquals(2, listener.testedState.toLong())
     }
+
     internal inner class TestOnSharedPreferenceChangeListener(
-            private val testTargetKey: String?
+        private val testTargetKey: String?
     ) : SharedPreferences.OnSharedPreferenceChangeListener {
         var testedState = 0
 
@@ -246,12 +247,12 @@ class XprefTest {
     fun testWrongClassCast() {
         val preferences = xpref()
         preferences.edit()
-                .putString("aint", "11111")   // put string
-                .putLong("along", Long.MAX_VALUE)
-                .putBoolean("aboolean", true)
-                .putString("astring", "false")
-                .putStringSet(null, setOf("a","b"))
-                .apply()
+            .putString("aint", "11111")   // put string
+            .putLong("along", Long.MAX_VALUE)
+            .putBoolean("aboolean", true)
+            .putString("astring", "false")
+            .putStringSet(null, setOf("a", "b"))
+            .apply()
         assertEquals("11111", preferences.getString("aint", null))
 
         // cast long to string
@@ -275,7 +276,7 @@ class XprefTest {
         assertNotNull(preferences.getStringSet(null, null))
         // cast stringset to string
         assertNotNull(preferences.getString(null, null))
-
     }
+
     private fun xpref() = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
 }

@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-
 /**
  * @author yrom
  */
@@ -41,7 +40,6 @@ class XprefProviderTest {
     fun setup() {
         cr = InstrumentationRegistry.getContext().contentResolver
         baseuri = getBaseUri(InstrumentationRegistry.getContext())
-
     }
 
     // 'right' call has been tested in XprefTest, so here we only test the 'wrong' call

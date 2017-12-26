@@ -20,7 +20,7 @@ import android.content.SharedPreferences
 import android.support.test.runner.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
+import java.util.ArrayList
 import kotlin.test.assertTrue
 
 /**
@@ -32,7 +32,7 @@ class SharedPreferencesWrapperTest {
     fun testWrapper() {
         val mock = MockSharedPreferences()
         val wrapper = XprefProvider.SharedPreferencesWrapper(mock,
-                SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->  })
+            SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> })
         wrapper.all
         wrapper.getString("", "")
         wrapper.getInt("", 0)
@@ -43,10 +43,10 @@ class SharedPreferencesWrapperTest {
         wrapper.edit().putString("", "").apply()
         wrapper.edit().putString("1", "").commit()
         assertTrue(
-                mock.testedMethods.containsAll(arrayListOf("getAll", "getString",
-                        "getInt", "getLong", "getFloat", "getStringSet",
-                        "contains", "edit", "apply", "commit",
-                        "registerOnSharedPreferenceChangeListener"))
+            mock.testedMethods.containsAll(arrayListOf("getAll", "getString",
+                "getInt", "getLong", "getFloat", "getStringSet",
+                "contains", "edit", "apply", "commit",
+                "registerOnSharedPreferenceChangeListener"))
         )
     }
 

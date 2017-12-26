@@ -130,7 +130,7 @@ class XprefProvider : ContentProvider() {
 
     private val caches = createMap()
 
-    override fun onCreate(): Boolean = true
+    override fun onCreate() = true
 
     override fun query(uri: Uri,
         projection: Array<String>?,
@@ -159,11 +159,11 @@ class XprefProvider : ContentProvider() {
      * Call methods of underlying SharedPreferences.
      *
      * @param method The supported methods, [M_GET_ALL], [M_GET_INT], etc.
-     * See `SharedPreferences.getXxx`
+     *         See `SharedPreferences.getXxx`
      * @param arg The key of SharedPreferences method.
-     * See `SharedPreferences.getXxx`
+     *         See `SharedPreferences.getXxx`
      * @param extras Method arguments Bundle.
-     * should contain name of SharedPreferences by key [KEY_NAME]
+     *         should contain name of SharedPreferences by key [KEY_NAME]
      * @return Returns result as Bundle with key [KEY_RET] or null
      */
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
@@ -208,11 +208,13 @@ class XprefProvider : ContentProvider() {
         return null
     }
 
-    private fun createMap(): MutableMap<String, SharedPreferencesWrapper> =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+    private fun createMap(): MutableMap<String, SharedPreferencesWrapper> {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             createArrayMap()
-        else
+        } else {
             HashMap()
+        }
+    }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private fun createArrayMap(): MutableMap<String, SharedPreferencesWrapper> = ArrayMap()
@@ -263,56 +265,53 @@ class XprefProvider : ContentProvider() {
             return c
         }
 
-        override fun getString(key: String?, defValue: String?): String? =
-            delegate.getString(key, defValue)
+        override fun getString(key: String?, defValue: String?): String? {
+            return delegate.getString(key, defValue)
+        }
 
-        internal fun getString(key: String?): String? =
-            try {
+        internal fun getString(key: String?): String? {
+            return try {
                 delegate.getString(key, null)
             } catch (e: ClassCastException) {
                 all[key]?.toString()
             }
+        }
 
-        override fun getStringSet(key: String?, defValues: Set<String>?): Set<String>? =
-            try {
+        override fun getStringSet(key: String?, defValues: Set<String>?): Set<String>? {
+            return try {
                 delegate.getStringSet(key, defValues)
             } catch (e: ClassCastException) {
                 defValues
             }
+        }
 
-        private inline fun <reified T> get(key: String?, stringCaster: (String) -> T?): T? =
-            all[key].let {
+        private inline fun <reified T> get(key: String?, stringCaster: (String) -> T?): T? {
+            return all[key].let {
                 when (it) {
                     is T -> it
                     is String -> stringCaster(it)
                     else -> null
                 }
             }
-
-        internal fun getInt(key: String?): Int? =
-            get(key) { it.toIntOrNull() }
-
-        override fun getInt(key: String?, defValue: Int): Int {
-            return delegate.getInt(key, defValue)
         }
 
-        internal fun getLong(key: String?): Long? =
-            get(key) { it.toLongOrNull() }
+        internal fun getInt(key: String?) = get(key) { it.toIntOrNull() }
 
-        override fun getLong(key: String?, defValue: Long): Long =
-            delegate.getLong(key, defValue)
+        override fun getInt(key: String?, defValue: Int) = delegate.getInt(key, defValue)
 
-        internal fun getFloat(key: String?): Float? =
-            get(key) { it.toFloatOrNull() }
+        internal fun getLong(key: String?) = get(key) { it.toLongOrNull() }
 
-        override fun getFloat(key: String?, defValue: Float): Float =
-            delegate.getFloat(key, defValue)
+        override fun getLong(key: String?, defValue: Long) = delegate.getLong(key, defValue)
 
-        internal fun getBoolean(key: String?): Boolean? =
-            get(key) { it.toBoolean() }
+        internal fun getFloat(key: String?) = get(key) { it.toFloatOrNull() }
 
-        override fun getBoolean(key: String?, defValue: Boolean): Boolean =
-            delegate.getBoolean(key, defValue)
+        override fun getFloat(key: String?, defValue: Float) = delegate.getFloat(key, defValue)
+
+        internal fun getBoolean(key: String?) = get(key) { it.toBoolean() }
+
+        override fun getBoolean(key: String?, defValue: Boolean): Boolean {
+            return delegate.getBoolean(key, defValue)
+        }
 
         override fun contains(key: String?): Boolean = delegate.contains(key)
 
@@ -329,7 +328,7 @@ class XprefProvider : ContentProvider() {
             // no op
         }
 
-        override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
+        override fun onSharedPreferenceChanged(ignored: SharedPreferences, key: String?) {
             reset()
             listener.onSharedPreferenceChanged(this, key)
         }
