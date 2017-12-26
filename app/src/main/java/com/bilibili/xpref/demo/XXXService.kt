@@ -44,16 +44,12 @@ class XXXService : Service(), SharedPreferences.OnSharedPreferenceChangeListener
         val cmd = intent.getIntExtra("cmd", 0)
         if (cmd == 0) return Service.START_NOT_STICKY
         when (cmd) {
-            R.id.read3 -> Log.i("xxx", Xpref.getDefaultSharedPreferences(this).all.toString())
-            R.id.write3 -> Xpref.getDefaultSharedPreferences(this)
-                    .edit()
+            R.id.read3 -> Log.i("xxx", preferences.all.toString())
+            R.id.write3 -> preferences.edit()
                     .putInt("int", (Math.random() * 100).toInt())
                     .putBoolean("bool", startId and 1 == 1)
                     .apply()
-            R.id.clear3 -> Xpref.getDefaultSharedPreferences(this)
-                    .edit()
-                    .clear()
-                    .apply()
+            R.id.clear3 -> preferences.edit().clear().apply()
         }
         return Service.START_NOT_STICKY
     }

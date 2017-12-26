@@ -21,7 +21,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.IBinder
 import android.util.Log
-import com.bilibili.xpref.Xpref
 
 /**
  * @author yrom
@@ -31,7 +30,7 @@ class XXService : Service(), SharedPreferences.OnSharedPreferenceChangeListener 
 
     override fun onCreate() {
         super.onCreate()
-        preferences = Xpref.getDefaultSharedPreferences(applicationContext)
+        preferences = this.xpref()
         preferences.registerOnSharedPreferenceChangeListener(this)
         preferences.edit().putString("random", Math.random().toString()).apply()
     }
@@ -44,20 +43,13 @@ class XXService : Service(), SharedPreferences.OnSharedPreferenceChangeListener 
         val cmd = intent.getIntExtra("cmd", 0)
         if (cmd == 0) return Service.START_NOT_STICKY
         when (cmd) {
-            R.id.read2 -> Log.i("xx",
-                    Xpref.getDefaultSharedPreferences(this)
-                            .all
-                            .toString())
-            R.id.write2 -> Xpref.getDefaultSharedPreferences(this)
-                    .edit()
+            R.id.read2 -> Log.i("xx", preferences.all.toString())
+            R.id.write2 -> preferences.edit()
                     .putInt("int", (Math.random() * 100).toInt())
                     .putStringSet("string-set",
                             setOf("aa", "bb", "cc", "dd", Math.random().toString()))
                     .apply()
-            R.id.clear2 -> Xpref.getDefaultSharedPreferences(this)
-                    .edit()
-                    .clear()
-                    .apply()
+            R.id.clear2 -> preferences.edit().clear().apply()
         }
 
         return Service.START_NOT_STICKY

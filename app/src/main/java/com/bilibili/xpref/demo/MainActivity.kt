@@ -45,8 +45,7 @@ class MainActivity : Activity(), View.OnClickListener {
             Log.d("MainActivity",
                 "received changes '$key'= '${pref.all[key]}' in activity '$title' ")
         }
-        Xpref.getDefaultSharedPreferences(this)
-            .registerOnSharedPreferenceChangeListener(listener)
+        this.xpref().registerOnSharedPreferenceChangeListener(listener)
     }
 
     override fun onClick(v: View) {
@@ -54,7 +53,7 @@ class MainActivity : Activity(), View.OnClickListener {
             R.id.read ->
                 Log.i("Xpref", Xpref.getDefaultSharedPreferences(this).all.toString())
             R.id.write ->
-                Xpref.getDefaultSharedPreferences(this)
+                this.xpref()
                     .edit()
                     .putInt("int", (Math.random() * 100).toInt())
                     .putString("string", (Math.random() * 100).toString())
@@ -63,7 +62,7 @@ class MainActivity : Activity(), View.OnClickListener {
                     .putStringSet("string-set", setOf("a", "b", "c", "d"))
                     .putFloat(null, 0.5F) // null key
                     .apply()
-            R.id.clear -> Xpref.getDefaultSharedPreferences(this).edit().clear().apply()
+            R.id.clear -> this.xpref().edit().clear().apply()
             R.id.read2, R.id.write2, R.id.clear2 ->
                 startService(Intent(this, XXService::class.java)
                     .putExtra("cmd", v.id))
@@ -80,8 +79,7 @@ class MainActivity : Activity(), View.OnClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        Xpref.getDefaultSharedPreferences(this)
-            .unregisterOnSharedPreferenceChangeListener(listener)
+        this.xpref().unregisterOnSharedPreferenceChangeListener(listener)
         listener = null
     }
 }

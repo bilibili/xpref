@@ -37,8 +37,7 @@ class XprefTest {
      */
     @After
     fun afterTest() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
-        preferences.edit().clear().apply()
+        xpref().edit().clear().apply()
     }
 
     @Test
@@ -65,7 +64,7 @@ class XprefTest {
     fun testGetString() {
         val v = "astring"
         val key = "akey"
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertNull(preferences.getString("notexsits", null))
         assertEquals(v, preferences.getString("notexsits", v))
 
@@ -79,7 +78,7 @@ class XprefTest {
     fun testGetStringSet() {
         val v = HashSet(Arrays.asList("adfadf", "bcvcv", "bmuer"))
         val key = "stringset"
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertNull(preferences.getStringSet("notexsits", null))
         assertEquals(v, preferences.getStringSet("notexsits", v))
 
@@ -94,7 +93,7 @@ class XprefTest {
     fun testGetFloat() {
         val v = 0.123456789f
         val key = "afloat"
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertEquals(Float.NaN, preferences.getFloat("notexsits", Float.NaN))
 
         preferences.edit()
@@ -107,7 +106,7 @@ class XprefTest {
     fun testGetLong() {
         val v = java.lang.Double.doubleToLongBits(Math.random())
         val key = "along"
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertTrue(v == preferences.getLong("notexsits", v))
         assertTrue(Long.MAX_VALUE == preferences.getLong("notexsits", Long.MAX_VALUE))
         assertTrue(Long.MIN_VALUE == preferences.getLong("notexsits", Long.MIN_VALUE))
@@ -122,7 +121,7 @@ class XprefTest {
     fun testGetInt() {
         val v = java.lang.Double.doubleToLongBits(Math.random()).toInt()
         val key = "aint"
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertTrue(v == preferences.getInt("notexsits", v))
         assertTrue(Int.MAX_VALUE == preferences.getInt("notexsits", Int.MAX_VALUE))
         assertTrue(Int.MIN_VALUE == preferences.getInt("notexsits", Int.MIN_VALUE))
@@ -137,7 +136,7 @@ class XprefTest {
     fun testGetBoolean() {
         val v = java.lang.Double.doubleToLongBits(Math.random()).toInt() and 1 == 1
         val key = "aboolean"
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertEquals(v, preferences.getBoolean("notexsits", v))
         assertFalse(preferences.getBoolean("notexsits", false))
 
@@ -149,7 +148,7 @@ class XprefTest {
 
     @Test
     fun testEditAndGetAll() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertTrue(preferences.all.isEmpty())
         preferences.edit()
                 .putInt("a", 1)
@@ -163,7 +162,7 @@ class XprefTest {
 
     @Test
     fun testContainsAndRemoveKey() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertTrue(preferences.all.isEmpty())
         preferences.edit().putLong("l", Long.MIN_VALUE).apply()
         assertTrue(preferences.contains("l"))
@@ -175,7 +174,7 @@ class XprefTest {
 
     @Test
     fun testClear() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         assertTrue(preferences.all.isEmpty())
         preferences.edit().putLong("l", java.lang.Long.MIN_VALUE).putFloat("f", 0.1f).apply()
         assertFalse(preferences.all.isEmpty())
@@ -185,7 +184,7 @@ class XprefTest {
 
     @Test
     fun testListener() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         val listener = TestOnSharedPreferenceChangeListener("key")
         preferences.registerOnSharedPreferenceChangeListener(listener)
         preferences.edit().putString("key", "kkkk").apply()
@@ -209,7 +208,7 @@ class XprefTest {
     }
     @Test
     fun testNullKeyListener() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         val listener = TestOnSharedPreferenceChangeListener(null)
         preferences.registerOnSharedPreferenceChangeListener(listener)
         preferences.edit().putString(null, "null key").apply()
@@ -245,7 +244,7 @@ class XprefTest {
 
     @Test
     fun testWrongClassCast() {
-        val preferences = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
+        val preferences = xpref()
         preferences.edit()
                 .putString("aint", "11111")   // put string
                 .putLong("along", Long.MAX_VALUE)
@@ -278,4 +277,5 @@ class XprefTest {
         assertNotNull(preferences.getString(null, null))
 
     }
+    private fun xpref() = Xpref.getDefaultSharedPreferences(InstrumentationRegistry.getContext())
 }
