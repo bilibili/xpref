@@ -62,8 +62,7 @@ internal fun Set<*>.toStringArrayList(): ArrayList<String?> {
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal fun Map<String?, *>?.toBundle(): Bundle {
-    return if (this == null) Bundle.EMPTY
-    else Bundle(this.size).also { it.putAll(this) }
+    return this?.let { Bundle(it.size) }?.also { it.putAll(this) } ?: Bundle.EMPTY
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -93,72 +92,44 @@ internal const val KEY_RET = "\$xpref.ret"
  * Construct Bundle instance with key [KEY_RET] int value
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal fun retBundleOf(v: Int?): Bundle? {
-    return if (v == null) {
-        null
-    } else {
-        Bundle(1).apply { putInt(KEY_RET, v) }
-    }
-}
+internal fun retBundleOf(v: Int?) = bundle(v) { putInt(KEY_RET, it) }
 
 /**
  * Construct Bundle instance with key [KEY_RET] Long value
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal fun retBundleOf(v: Long?): Bundle? {
-    return if (v == null) {
-        null
-    } else {
-        Bundle(1).apply { putLong(KEY_RET, v) }
-    }
-}
+internal fun retBundleOf(v: Long?) = bundle(v) { putLong(KEY_RET, it) }
 
 /**
  * Construct Bundle instance with key [KEY_RET] Float value
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal fun retBundleOf(v: Float?): Bundle? {
-    return if (v == null) {
-        null
-    } else {
-        Bundle(1).apply { putFloat(KEY_RET, v) }
-    }
-}
+internal fun retBundleOf(v: Float?) = bundle(v) { putFloat(KEY_RET, it) }
 
 /**
  * Construct Bundle instance with key [KEY_RET] String value
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal fun retBundleOf(v: String?): Bundle? {
-    return if (v == null) {
-        null
-    } else {
-        Bundle(1).apply { putString(KEY_RET, v) }
-    }
-}
+internal fun retBundleOf(v: String?) = bundle(v) { putString(KEY_RET, it) }
 
 /**
  * Construct Bundle instance with key [KEY_RET] Boolean value
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal fun retBundleOf(v: Boolean?): Bundle? {
-    return if (v == null) {
-        null
-    } else {
-        Bundle(1).apply { putBoolean(KEY_RET, v) }
-    }
-}
+internal fun retBundleOf(v: Boolean?) = bundle(v) { putBoolean(KEY_RET, it) }
 
 /**
  * Construct Bundle instance with key [KEY_RET] StringSet value
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal fun retBundleOf(v: Set<*>?): Bundle? {
-    return if (v == null) {
-        null
-    } else {
-        Bundle(1).apply { putStringArrayList(KEY_RET, v.toStringArrayList()) }
+    return bundle(v) {
+        putStringArrayList(KEY_RET, it.toStringArrayList()) // StringSet to StringArrayList
     }
+}
+
+private inline fun <reified T> bundle(v: T?, putter: Bundle.(T) -> Unit): Bundle? {
+    return v?.let { Bundle(1) }?.apply { putter(v) }
 }
 
 /**

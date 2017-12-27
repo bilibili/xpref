@@ -28,7 +28,6 @@ import android.support.annotation.RestrictTo
 import android.util.Log
 import com.bilibili.xpref.BuildConfig.DEBUG
 import java.lang.ref.WeakReference
-import java.util.ArrayList
 import java.util.WeakHashMap
 
 /**
@@ -101,22 +100,21 @@ internal class Silhouette(context: Context, private val prefName: String) : Shar
 
         override fun onChange(selfChange: Boolean, uri: Uri) {
             if (DEBUG) Log.i(TAG, "onChanged " + uri)
-            if (contentResolver == null) return
             val ref = reference.get()
             if (ref == null || ref.listeners.isEmpty()) {
                 if (DEBUG) Log.w(TAG, "unregister leaked ContentObserver!")
-                contentResolver!!.unregisterContentObserver(this)
+                contentResolver?.unregisterContentObserver(this)
                 contentResolver = null
                 return
             }
 
-            var changedKey = uri.lastPathSegment
-            if (KEY_NULL == changedKey) {
-                changedKey = null
-            }
-            for (listener in ref.listeners.keys) {
-                listener.onSharedPreferenceChanged(ref, changedKey)
-            }
+            uri.lastPathSegment
+                .let { if (KEY_NULL == it) null else it }
+                .run {
+                    for (l in ref.listeners.keys) {
+                        l.onSharedPreferenceChanged(ref, this)
+                    }
+                }
         }
     }
 
@@ -141,16 +139,11 @@ internal class Silhouette(context: Context, private val prefName: String) : Shar
     internal fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
         return try {
             // ContentProvider cannot handle uri in call(), so put name in extras
-            val e = if (extras == null) {
-                callExtras
-            } else {
-                extras.putString(KEY_NAME, prefName)
-                extras
-            }
+            val ext = extras?.apply { putString(KEY_NAME, prefName) } ?: callExtras
             if (DEBUG) {
-                Log.d(TAG, "call $method($arg, $extras)")
+                Log.d(TAG, "call $method($arg, $ext)")
             }
-            resolver.call(baseUri, method, arg, e)
+            resolver.call(baseUri, method, arg, ext)
         } catch (e: Exception) {
             Log.w(TAG, e)
             null
@@ -166,7 +159,7 @@ internal class Silhouette(context: Context, private val prefName: String) : Shar
         }
 
         override fun putStringSet(key: String?, values: Set<String>?): SharedPreferences.Editor {
-            changes.putStringArrayList(key, if (values == null) null else ArrayList(values))
+            changes.putStringArrayList(key, values?.toStringArrayList())
             return this
         }
 

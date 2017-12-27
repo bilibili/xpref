@@ -167,23 +167,23 @@ class XprefProvider : ContentProvider() {
      * @return Returns result as Bundle with key [KEY_RET] or null
      */
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
+        extras?.getString(KEY_NAME)?.let { this.get(it) }?.run {
+            return when (method) {
+                M_GET_ALL -> all.toBundle()
+                M_GET_INT -> retBundleOf(getInt(arg))
+                M_GET_LONG -> retBundleOf(getLong(arg))
+                M_GET_FLOAT -> retBundleOf(getFloat(arg))
+                M_GET_STRING -> retBundleOf(getString(arg))
+                M_GET_BOOLEAN -> retBundleOf(getBoolean(arg))
+                M_GET_STRING_SET -> retBundleOf(getStringSet(arg, null))
+                M_CONTAINS -> if (contains(arg)) Bundle.EMPTY else null
+                M_EDITOR_COMMIT -> extras.also { it.remove(KEY_NAME) }.applyTo(this)
+                else -> null
+            }
+        }
         // extras should not be null here
-        val targetPref = extras?.getString(KEY_NAME) ?: return null.also {
-            Log.w("XprefProvider", "What work?")
-        }
-        val pref = this.get(targetPref)
-        return when (method) {
-            M_GET_ALL -> pref.all.toBundle()
-            M_GET_INT -> retBundleOf(pref.getInt(arg))
-            M_GET_LONG -> retBundleOf(pref.getLong(arg))
-            M_GET_FLOAT -> retBundleOf(pref.getFloat(arg))
-            M_GET_STRING -> retBundleOf(pref.getString(arg))
-            M_GET_BOOLEAN -> retBundleOf(pref.getBoolean(arg))
-            M_GET_STRING_SET -> retBundleOf(pref.getStringSet(arg, null))
-            M_CONTAINS -> if (pref.contains(arg)) Bundle.EMPTY else null
-            M_EDITOR_COMMIT -> extras.also { it.remove(KEY_NAME) }.applyTo(pref)
-            else -> null
-        }
+        Log.w("XprefProvider", "What work?")
+        return null
     }
 
     private fun Bundle.applyTo(pref: SharedPreferences): Bundle? {
@@ -249,7 +249,7 @@ class XprefProvider : ContentProvider() {
     internal class SharedPreferencesWrapper(
         private val delegate: SharedPreferences,
         private val listener: OnSharedPreferenceChangeListener
-    ) : SharedPreferences, OnSharedPreferenceChangeListener {
+    ) : SharedPreferences by delegate, OnSharedPreferenceChangeListener {
         private var cache: Map<String?, *>? = null
 
         init {
@@ -260,10 +260,6 @@ class XprefProvider : ContentProvider() {
             val c = cache ?: delegate.all
             cache = c
             return c
-        }
-
-        override fun getString(key: String?, defValue: String?): String? {
-            return delegate.getString(key, defValue)
         }
 
         internal fun getString(key: String?): String? {
@@ -294,23 +290,11 @@ class XprefProvider : ContentProvider() {
 
         internal fun getInt(key: String?) = get(key) { it.toIntOrNull() }
 
-        override fun getInt(key: String?, defValue: Int) = delegate.getInt(key, defValue)
-
         internal fun getLong(key: String?) = get(key) { it.toLongOrNull() }
-
-        override fun getLong(key: String?, defValue: Long) = delegate.getLong(key, defValue)
 
         internal fun getFloat(key: String?) = get(key) { it.toFloatOrNull() }
 
-        override fun getFloat(key: String?, defValue: Float) = delegate.getFloat(key, defValue)
-
         internal fun getBoolean(key: String?) = get(key) { it.toBoolean() }
-
-        override fun getBoolean(key: String?, defValue: Boolean): Boolean {
-            return delegate.getBoolean(key, defValue)
-        }
-
-        override fun contains(key: String?): Boolean = delegate.contains(key)
 
         @SuppressLint("CommitPrefEdits")
         override fun edit(): SharedPreferences.Editor = Editor(delegate.edit())
@@ -332,53 +316,11 @@ class XprefProvider : ContentProvider() {
 
         private inner class Editor internal constructor(
             private val delegate: SharedPreferences.Editor
-        ) : SharedPreferences.Editor {
-
-            override fun putString(key: String?, value: String?): SharedPreferences.Editor {
-                delegate.putString(key, value)
-                return this
-            }
-
-            override fun putStringSet(key: String?,
-                values: Set<String>?
-            ): SharedPreferences.Editor {
-                delegate.putStringSet(key, values)
-                return this
-            }
-
-            override fun putInt(key: String?, value: Int): SharedPreferences.Editor {
-                delegate.putInt(key, value)
-                return this
-            }
-
-            override fun putLong(key: String?, value: Long): SharedPreferences.Editor {
-                delegate.putLong(key, value)
-                return this
-            }
-
-            override fun putFloat(key: String?, value: Float): SharedPreferences.Editor {
-                delegate.putFloat(key, value)
-                return this
-            }
-
-            override fun putBoolean(key: String?, value: Boolean): SharedPreferences.Editor {
-                delegate.putBoolean(key, value)
-                return this
-            }
-
-            override fun remove(key: String?): SharedPreferences.Editor {
-                delegate.remove(key)
-                return this
-            }
-
-            override fun clear(): SharedPreferences.Editor {
-                delegate.clear()
-                return this
-            }
+        ) : SharedPreferences.Editor by delegate {
 
             override fun commit(): Boolean {
-                try {
-                    return delegate.commit()
+                return try {
+                    delegate.commit()
                 } finally {
                     this@SharedPreferencesWrapper.reset()
                 }
