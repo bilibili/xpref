@@ -19,29 +19,20 @@ afterEvaluate {
                 version project.version
 
                 pom.withXml {
-                    def node = asNode()
+                    def node = asNode() as Node
                     def dependenciesNode = node.appendNode('dependencies')
-                    configurations.implementation.allDependencies.each {
-                        // Ensure dependencies such as fileTree are not included in the pom.
-                        if (it.name != 'unspecified') {
-                            def dependencyNode = dependenciesNode.appendNode('dependency')
-                            dependencyNode.appendNode('groupId', it.group)
-                            dependencyNode.appendNode('artifactId', it.name)
-                            dependencyNode.appendNode('version', it.version)
-                            dependencyNode.appendNode('scope', 'compile')
+                    def addDependencies = { Configuration config, String scope ->
+                        config.allDependencies.matching { it.name != 'unspecified' }.all {
+                            def dependency = dependenciesNode.appendNode('dependency')
+                            dependency.appendNode('groupId', it.group)
+                            dependency.appendNode('artifactId', it.name)
+                            dependency.appendNode('version', it.version)
+                            dependency.appendNode('scope', scope)
                         }
                     }
-                    configurations.compileOnly.allDependencies.each {
-                        // Ensure dependencies such as fileTree are not included in the pom.
-                        if (it.name != 'unspecified') {
-                            def dependencyNode = dependenciesNode.appendNode('dependency')
-                            dependencyNode.appendNode('groupId', it.group)
-                            dependencyNode.appendNode('artifactId', it.name)
-                            dependencyNode.appendNode('version', it.version)
-                            dependencyNode.appendNode('scope', 'provided')
-                        }
-                    }
-                    node.children().last() + {
+                    addDependencies(configurations.implementation, 'compile')
+                    addDependencies(configurations.compileOnly, 'provided')
+                    dependenciesNode + {
                         resolveStrategy = DELEGATE_FIRST
                         description POM_DESCRIPTION
                         name POM_NAME
