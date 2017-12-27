@@ -186,12 +186,12 @@ class XprefProvider : ContentProvider() {
         }
     }
 
-    private fun Bundle.applyTo(pref: SharedPreferences): Nothing? {
+    private fun Bundle.applyTo(pref: SharedPreferences): Bundle? {
         val editor = pref.edit()
         if (getBoolean(KEY_CLEAR, false)) {
             editor.clear()
         } else {
-            keySet().forEach { k ->
+            for (k in keySet()) {
                 val v = this[k]
                 when (v) {
                     null -> editor.remove(k)
@@ -222,16 +222,13 @@ class XprefProvider : ContentProvider() {
     private fun get(name: String): SharedPreferencesWrapper {
         val context = context ?: throw IllegalStateException()
         synchronized(this) {
-            var pref = caches[name]
-            if (pref == null) {
-                pref = SharedPreferencesWrapper(
+            return caches.getOrPut(name, {
+                SharedPreferencesWrapper(
                     context.getSharedPreferences(name, Context.MODE_PRIVATE),
                     OnSharedPreferenceChangeListener { _, key: String? ->
                         notifyChanged(name, key)
                     })
-                caches.put(name, pref)
-            }
-            return pref
+            })
         }
     }
 

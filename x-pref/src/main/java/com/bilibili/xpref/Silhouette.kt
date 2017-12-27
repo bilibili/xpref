@@ -40,9 +40,13 @@ internal class Silhouette(context: Context, private val prefName: String) : Shar
 
     private val resolver = context.contentResolver
     private val baseUri = getBaseUri(context)
-    private val callExtras = Bundle(1).apply { putString(KEY_NAME, prefName) }
+    private val callExtras = Bundle(1)
     private val listeners = WeakHashMap<SharedPreferences.OnSharedPreferenceChangeListener, Any?>()
     private var contentObserver: ContentObserver? = null
+
+    init {
+        callExtras.putString(KEY_NAME, prefName)
+    }
 
     override fun getAll() = call(M_GET_ALL, null, null).toMap()
 
@@ -80,7 +84,7 @@ internal class Silhouette(context: Context, private val prefName: String) : Shar
         listener: SharedPreferences.OnSharedPreferenceChangeListener) {
         if (DEBUG) Log.i(TAG, "register a listener " + listener)
         listeners.put(listener, null)
-        registerObServerIfNeed()
+        registerObserverIfNeed()
     }
 
     override fun unregisterOnSharedPreferenceChangeListener(
@@ -116,17 +120,20 @@ internal class Silhouette(context: Context, private val prefName: String) : Shar
         }
     }
 
-    @Synchronized private fun registerObServerIfNeed() {
+    @Synchronized private fun registerObserverIfNeed() {
         if (contentObserver == null) {
-            contentObserver = Observer(resolver, this)
             val target = baseUri.buildUpon().appendPath(prefName).build()
-            resolver.registerContentObserver(target, true, contentObserver!!)
+            val observer = Observer(resolver, this)
+            resolver.registerContentObserver(target, true, observer)
+            contentObserver = observer
         }
     }
 
     @Synchronized private fun unregisterObserverIfIndeed() {
-        if (listeners.isEmpty() && contentObserver != null) {
-            resolver.unregisterContentObserver(contentObserver!!)
+        if (listeners.isEmpty()) {
+            contentObserver?.let {
+                resolver.unregisterContentObserver(it)
+            }
             contentObserver = null
         }
     }
