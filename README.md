@@ -13,9 +13,9 @@ cross-process sharing data
 
 Add dependency to your gradle script:
 
-```
+```groovy
 dependencies {
-    implementation 'com.bilibili.lib:x-pref:1.1'
+    implementation 'com.bilibili.lib:x-pref:1.2'
 }
 ```
 
